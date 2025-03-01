@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de Estacionamiento</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Estilos personalizados -->
+    <style>
+        body {
+            background-color:rgb(77, 155, 234);
+        }
+        .video-container {
+            background-color: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            display: grid;
+            place-items: center; 
+            height: 420px;
+        }
+        .counters {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .counter-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .btn {
+            margin: 5px;
+        }
+       #video-feed{
+            width:100%;
+     
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <h1 class="text-center mb-4">Monitor de Estacionamiento</h1> 
+        <h1 class="text-center mb-4">Desarrollado por: @GabrielRC</h1> 
+        <div class="row">
+            <div class="col-md-8">
+                <div class="video-container">
+                    <img id="video-feed" src="" alt="Video Feed" class="img-fluid">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="counters text-center">
+                    <h3>Espacios Disponibles</h3>
+                    <p class="counter-value" id="free-count">0</p>
+                    <h3>Espacios Ocupados</h3>
+                    <p class="counter-value" id="occupied-count">0</p>
+                    <h3>Total de Espacios</h3>
+                    <p class="counter-value" id="total-spaces">0</p> <!-- Total de espacios -->
+                    <div class="mt-4">
+                        <button id="start-camera" class="btn btn-success">Iniciar Cámara</button>
+                        <button id="stop-camera" class="btn btn-danger">Detener Cámara</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS y dependencias -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <!-- SocketIO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+    <!-- Script personalizado -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const videoFeed = document.getElementById("video-feed");
+            const freeCount = document.getElementById("free-count");
+            const occupiedCount = document.getElementById("occupied-count");
+            const totalSpaces = document.getElementById("total-spaces");
+            const startCameraBtn = document.getElementById("start-camera");
+            const stopCameraBtn = document.getElementById("stop-camera");
+
+            // Conectar al servidor SocketIO
+            const socket = io();
+
+            // Escuchar el evento 'video_frame' para actualizar el video y los contadores
+            socket.on('video_frame', function (data) {
+                videoFeed.src = `data:image/jpeg;base64,${data.frame}`;
+                freeCount.textContent = data.free_count;
+                occupiedCount.textContent = data.occupied_count;
+                // Calcular el total de espacios (suma de libres y ocupados)
+                totalSpaces.textContent = data.free_count + data.occupied_count;
+            });
+
+            // Escuchar el evento 'label_changed' para notificar cambios
+            socket.on('label_changed', function (label) {
+                alert(`¡Cambio detectado! Etiqueta: ${label}`);
+            });
+
+            // Manejar el clic en el botón "Iniciar Cámara"
+            startCameraBtn.addEventListener("click", function () {
+                socket.emit('start_camera');
+            });
+
+            // Manejar el clic en el botón "Detener Cámara"
+            stopCameraBtn.addEventListener("click", function () {
+                socket.emit('stop_camera');
+            });
+        });
+    </script>
+</body>
+</html>
