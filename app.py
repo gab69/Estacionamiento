@@ -5,6 +5,7 @@ import cv2
 import base64
 import threading
 import time
+import os
 
 
 app = Flask(__name__)
@@ -121,4 +122,5 @@ thread.start()
 
 # Ejecutar la aplicación
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000)
+    #socketio.run(app, host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
